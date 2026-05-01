@@ -92,6 +92,15 @@ export function ThreatModelProvider({ children }) {
     URL.revokeObjectURL(url);
   };
 
+  const loadTemplate = (templateData) => {
+    if (confirm("Are you sure you want to load this template? This will replace your current diagram.")) {
+      setNodes(templateData.nodes || []);
+      setEdges(templateData.edges || []);
+      setThreats(templateData.threats || {});
+      setSelectedNode(null);
+    }
+  };
+
   return (
     <ThreatModelContext.Provider value={{
       nodes, setNodes, onNodesChange,
@@ -99,7 +108,7 @@ export function ThreatModelProvider({ children }) {
       threats, setThreats,
       selectedNode, setSelectedNode,
       addThreat, updateThreat, deleteThreat,
-      importData, exportData
+      importData, exportData, loadTemplate
     }}>
       {children}
     </ThreatModelContext.Provider>

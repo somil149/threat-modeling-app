@@ -2,9 +2,10 @@ import React, { useRef } from 'react';
 import { useThreatModel } from '../context/ThreatModelContext';
 import { Download, Upload, Server, Database, User } from 'lucide-react';
 import { v4 as uuidv4 } from 'uuid';
+import { TEMPLATES } from '../templates';
 
 export default function Toolbar() {
-  const { setNodes, exportData, importData } = useThreatModel();
+  const { setNodes, exportData, importData, loadTemplate } = useThreatModel();
   const fileInputRef = useRef(null);
 
   const addNode = (type, label) => {
@@ -40,6 +41,23 @@ export default function Toolbar() {
       <button className="btn btn-secondary" onClick={() => addNode('datastore', 'New Data Store')} title="Add Data Store">
         <Database size={16} /> Store
       </button>
+      
+      <div className="toolbar-separator" />
+      
+      <select 
+        onChange={(e) => {
+          if(e.target.value) {
+            loadTemplate(TEMPLATES[e.target.value].data());
+            e.target.value = ''; // reset selection
+          }
+        }}
+        style={{ width: '150px', marginBottom: 0, padding: '8px', background: 'rgba(0,0,0,0.4)', color: 'white', border: '1px solid var(--panel-border)', borderRadius: '6px' }}
+      >
+        <option value="">Templates...</option>
+        {Object.entries(TEMPLATES).map(([key, t]) => (
+          <option key={key} value={key}>{t.name}</option>
+        ))}
+      </select>
       
       <div className="toolbar-separator" />
       
