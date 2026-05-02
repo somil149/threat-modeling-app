@@ -103,6 +103,19 @@ export function ThreatModelProvider({ children }) {
     }
   };
 
+  const deleteNode = (nodeId) => {
+    setNodes(nds => nds.filter(n => n.id !== nodeId));
+    setEdges(eds => eds.filter(e => e.source !== nodeId && e.target !== nodeId));
+    setThreats(prev => {
+      const newThreats = { ...prev };
+      delete newThreats[nodeId];
+      return newThreats;
+    });
+    if (selectedNode?.id === nodeId) {
+      setSelectedNode(null);
+    }
+  };
+
   return (
     <ThreatModelContext.Provider value={{
       nodes, setNodes, onNodesChange,
@@ -111,7 +124,7 @@ export function ThreatModelProvider({ children }) {
       selectedNode, setSelectedNode,
       currentMode, setCurrentMode,
       addThreat, updateThreat, deleteThreat,
-      importData, exportData, loadTemplate
+      importData, exportData, loadTemplate, deleteNode
     }}>
       {children}
     </ThreatModelContext.Provider>

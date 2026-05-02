@@ -43,7 +43,7 @@ export const getSeverityFromRisk = (risk) => {
 };
 
 export default function ThreatPanel() {
-  const { selectedNode, setNodes, threats, addThreat, updateThreat, deleteThreat } = useThreatModel();
+  const { selectedNode, setNodes, threats, addThreat, updateThreat, deleteThreat, deleteNode } = useThreatModel();
   const [isAdding, setIsAdding] = useState(false);
   const [activeFramework, setActiveFramework] = useState('STRIDE');
   const [newThreat, setNewThreat] = useState({ title: '', category: 'Spoofing', likelihood: 3, impact: 3, desc: '', status: 'Open' });
@@ -78,17 +78,49 @@ export default function ThreatPanel() {
     selectedNode.data.label = newLabel; 
   };
 
+  const handleUpdateCIA = (key, val) => {
+    setNodes(nds => nds.map(n => n.id === selectedNode.id ? { ...n, data: { ...n.data, [key]: val } } : n));
+    selectedNode.data[key] = val;
+  };
+
   return (
     <div className="sidebar glass-panel">
       <div className="sidebar-header">
-        <h2><ShieldAlert size={20} /> Properties</h2>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+          <h2><ShieldAlert size={20} /> Properties</h2>
+          <button className="btn btn-danger" style={{ padding: '4px 8px' }} onClick={() => deleteNode(selectedNode.id)} title="Delete Component">
+            <Trash2 size={14} />
+          </button>
+        </div>
         <input 
           type="text" 
           value={selectedNode.data?.label || ''} 
           onChange={handleUpdateLabel}
           style={{ marginTop: '12px', marginBottom: 0 }}
         />
-        <p style={{ textTransform: 'capitalize', fontSize: '12px', color: 'var(--text-muted)' }}>Type: {selectedNode.type}</p>
+        <p style={{ textTransform: 'capitalize', fontSize: '12px', color: 'var(--text-muted)', marginBottom: '12px' }}>Type: {selectedNode.type}</p>
+        
+        {/* CIA Triad Asset Valuation */}
+        <div style={{ display: 'flex', gap: '8px', fontSize: '11px' }}>
+          <div style={{ flex: 1 }}>
+            <label style={{ fontSize: '10px', marginBottom: '2px' }}>Confidentiality</label>
+            <select style={{ padding: '2px 4px', fontSize: '11px', marginBottom: 0 }} value={selectedNode.data?.confidentiality || 'Low'} onChange={(e) => handleUpdateCIA('confidentiality', e.target.value)}>
+              <option value="High">High</option><option value="Medium">Medium</option><option value="Low">Low</option>
+            </select>
+          </div>
+          <div style={{ flex: 1 }}>
+            <label style={{ fontSize: '10px', marginBottom: '2px' }}>Integrity</label>
+            <select style={{ padding: '2px 4px', fontSize: '11px', marginBottom: 0 }} value={selectedNode.data?.integrity || 'Low'} onChange={(e) => handleUpdateCIA('integrity', e.target.value)}>
+              <option value="High">High</option><option value="Medium">Medium</option><option value="Low">Low</option>
+            </select>
+          </div>
+          <div style={{ flex: 1 }}>
+            <label style={{ fontSize: '10px', marginBottom: '2px' }}>Availability</label>
+            <select style={{ padding: '2px 4px', fontSize: '11px', marginBottom: 0 }} value={selectedNode.data?.availability || 'Low'} onChange={(e) => handleUpdateCIA('availability', e.target.value)}>
+              <option value="High">High</option><option value="Medium">Medium</option><option value="Low">Low</option>
+            </select>
+          </div>
+        </div>
       </div>
 
       <div className="sidebar-content">

@@ -5,7 +5,7 @@ import { useThreatModel } from '../context/ThreatModelContext';
 import { nodeTypes } from './CustomNodes';
 
 export default function DiagramCanvas() {
-  const { nodes, edges, setEdges, onNodesChange, onEdgesChange, setSelectedNode } = useThreatModel();
+  const { nodes, edges, setEdges, onNodesChange, onEdgesChange, setSelectedNode, deleteNode } = useThreatModel();
 
   const onConnect = useCallback((params) => setEdges((eds) => addEdge(params, eds)), [setEdges]);
 
@@ -17,6 +17,10 @@ export default function DiagramCanvas() {
     }
   }, [setSelectedNode]);
 
+  const onNodesDelete = useCallback((deleted) => {
+    deleted.forEach(d => deleteNode(d.id));
+  }, [deleteNode]);
+
   return (
     <div className="diagram-container">
       <ReactFlow
@@ -26,6 +30,7 @@ export default function DiagramCanvas() {
         onEdgesChange={onEdgesChange}
         onConnect={onConnect}
         onSelectionChange={onSelectionChange}
+        onNodesDelete={onNodesDelete}
         nodeTypes={nodeTypes}
         connectionMode={ConnectionMode.Loose}
         fitView

@@ -1,7 +1,7 @@
 import React from 'react';
 import { ThreatModelProvider, useThreatModel } from './context/ThreatModelContext';
 import { ReactFlowProvider } from 'reactflow';
-import { LayoutDashboard, ShieldAlert, GitMerge, FileOutput, Activity } from 'lucide-react';
+import { LayoutDashboard, ShieldAlert, GitMerge, FileOutput, Activity, Grid } from 'lucide-react';
 
 // Components
 import DiagramCanvas from './components/DiagramCanvas';
@@ -10,6 +10,7 @@ import ThreatPanel from './components/ThreatPanel';
 import AttackGraphPanel from './components/AttackGraph';
 import ExportPanel from './components/ExportPanel';
 import DevSecOpsPanel from './components/DevSecOpsPanel';
+import RiskMatrixPanel from './components/RiskMatrixPanel';
 
 const SidebarNav = () => {
   const { currentMode, setCurrentMode } = useThreatModel();
@@ -17,6 +18,7 @@ const SidebarNav = () => {
   const navItems = [
     { mode: 'ARCHITECTURE', icon: <LayoutDashboard size={20} />, label: 'Architecture' },
     { mode: 'SIMULATION', icon: <GitMerge size={20} />, label: 'Attack Graph' },
+    { mode: 'RISK_MATRIX', icon: <Grid size={20} />, label: 'Risk Matrix' },
     { mode: 'DEVSECOPS', icon: <Activity size={20} />, label: 'DevSecOps' },
     { mode: 'EXPORT', icon: <FileOutput size={20} />, label: 'Exports' }
   ];
@@ -60,6 +62,7 @@ const AppContent = () => {
           </>
         )}
         {currentMode === 'SIMULATION' && <AttackGraphPanel />}
+        {currentMode === 'RISK_MATRIX' && <RiskMatrixPanel />}
         {currentMode === 'DEVSECOPS' && <DevSecOpsPanel />}
         {currentMode === 'EXPORT' && <ExportPanel />}
       </div>
