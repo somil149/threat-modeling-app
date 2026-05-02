@@ -4,7 +4,8 @@ import { KeyRound, Send, Bot, Shield, Trash2, Loader2, AlertTriangle, Settings }
 
 const PROVIDERS = {
   OpenAI: { baseUrl: 'https://api.openai.com/v1', defaultModel: 'gpt-4o' },
-  OpenRouter: { baseUrl: 'https://openrouter.ai/api/v1', defaultModel: 'anthropic/claude-3.5-sonnet' },
+  OpenRouter: { baseUrl: 'https://openrouter.ai/api/v1', defaultModel: 'anthropic/claude-3.7-sonnet' },
+  OpenRouterFree: { baseUrl: 'https://openrouter.ai/api/v1', defaultModel: 'openrouter/free' },
   Groq: { baseUrl: 'https://api.groq.com/openai/v1', defaultModel: 'llama3-70b-8192' },
   Custom: { baseUrl: 'http://localhost:11434/v1', defaultModel: 'llama3' }
 };
@@ -142,6 +143,7 @@ MAPPED THREATS: ${JSON.stringify(threats)}
               >
                 <option value="OpenAI">OpenAI</option>
                 <option value="OpenRouter">OpenRouter (Claude, Gemini, etc.)</option>
+                <option value="OpenRouterFree">OpenRouter (100% Free Models)</option>
                 <option value="Groq">Groq (Fast Llama 3)</option>
                 <option value="Custom">Custom / Local (Ollama, LM Studio)</option>
               </select>
