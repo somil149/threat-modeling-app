@@ -1,0 +1,66 @@
+[
+  {
+    "id": "T1190",
+    "name": "Exploit Public-Facing Application",
+    "tactic": "Initial Access",
+    "description": "Adversaries may attempt to exploit a weakness in an Internet-facing host or system to initially access a network.",
+    "platforms": ["Linux", "Windows", "macOS", "Cloud"],
+    "stride_mapping": ["Elevation of Privilege", "Information Disclosure"]
+  },
+  {
+    "id": "T1566",
+    "name": "Phishing",
+    "tactic": "Initial Access",
+    "description": "Adversaries may send phishing messages to gain access to victim systems.",
+    "platforms": ["Office 365", "Google Workspace", "SaaS"],
+    "stride_mapping": ["Spoofing"]
+  },
+  {
+    "id": "T1078",
+    "name": "Valid Accounts",
+    "tactic": "Initial Access, Persistence, Privilege Escalation",
+    "description": "Adversaries may obtain and abuse credentials of existing accounts as a means of gaining Initial Access, Persistence, Privilege Escalation, or Defense Evasion.",
+    "platforms": ["Windows", "Linux", "Cloud", "SaaS"],
+    "stride_mapping": ["Spoofing", "Elevation of Privilege"]
+  },
+  {
+    "id": "T1059",
+    "name": "Command and Scripting Interpreter",
+    "tactic": "Execution",
+    "description": "Adversaries may abuse command and script interpreters to execute commands, scripts, or binaries.",
+    "platforms": ["Windows", "Linux", "macOS"],
+    "stride_mapping": ["Tampering", "Elevation of Privilege"]
+  },
+  {
+    "id": "T1530",
+    "name": "Data from Cloud Storage Object",
+    "tactic": "Collection",
+    "description": "Adversaries may access data objects from improperly secured cloud storage.",
+    "platforms": ["AWS", "GCP", "Azure"],
+    "stride_mapping": ["Information Disclosure"]
+  },
+  {
+    "id": "T1040",
+    "name": "Network Sniffing",
+    "tactic": "Credential Access, Discovery",
+    "description": "Adversaries may sniffer network traffic to capture information about an environment, including authentication material passed over the network.",
+    "platforms": ["Windows", "Linux", "macOS"],
+    "stride_mapping": ["Information Disclosure"]
+  },
+  {
+    "id": "T1499",
+    "name": "Endpoint Denial of Service",
+    "tactic": "Impact",
+    "description": "Adversaries may perform Endpoint Denial of Service (DoS) attacks to degrade or block the availability of services.",
+    "platforms": ["Windows", "Linux", "macOS"],
+    "stride_mapping": ["Denial of Service"]
+  },
+  {
+    "id": "T1565",
+    "name": "Data Manipulation",
+    "tactic": "Impact",
+    "description": "Adversaries may insert, delete, or manipulate data in order to influence a process or system.",
+    "platforms": ["Windows", "Linux", "macOS", "Cloud"],
+    "stride_mapping": ["Tampering"]
+  }
+]

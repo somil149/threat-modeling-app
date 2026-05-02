@@ -8,6 +8,7 @@ export function ThreatModelProvider({ children }) {
   const [edges, setEdges] = useState([]);
   const [threats, setThreats] = useState({}); // key: nodeId, value: Array of threats
   const [selectedNode, setSelectedNode] = useState(null);
+  const [currentMode, setCurrentMode] = useState('ARCHITECTURE');
 
   // Load from local storage
   useEffect(() => {
@@ -107,6 +108,7 @@ export function ThreatModelProvider({ children }) {
       edges, setEdges, onEdgesChange,
       threats, setThreats,
       selectedNode, setSelectedNode,
+      currentMode, setCurrentMode,
       addThreat, updateThreat, deleteThreat,
       importData, exportData, loadTemplate
     }}>

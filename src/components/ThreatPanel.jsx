@@ -12,32 +12,41 @@ const FRAMEWORKS = {
 const getSuggestions = (nodeType, framework) => {
   if (framework === 'STRIDE') {
     switch(nodeType) {
-      case 'datastore': return [{ category: 'Information Disclosure', title: 'Data exposure at rest', desc: 'Sensitive data might be read by unauthorized users.', severity: 'High' }];
-      case 'process': return [{ category: 'Elevation of Privilege', title: 'Unauthorized access', desc: 'Process runs with higher privileges than necessary.', severity: 'High' }];
-      case 'entity': return [{ category: 'Spoofing', title: 'Entity impersonation', desc: 'Attacker pretends to be this entity.', severity: 'High' }];
+      case 'datastore': return [{ category: 'Information Disclosure', title: 'Data exposure at rest', desc: 'Sensitive data might be read by unauthorized users.', likelihood: 3, impact: 4 }];
+      case 'process': return [{ category: 'Elevation of Privilege', title: 'Unauthorized access', desc: 'Process runs with higher privileges than necessary.', likelihood: 2, impact: 5 }];
+      case 'entity': return [{ category: 'Spoofing', title: 'Entity impersonation', desc: 'Attacker pretends to be this entity.', likelihood: 3, impact: 3 }];
       default: return [];
     }
   } else if (framework === 'OWASP_LLM') {
     return [
-      { category: 'Prompt Injection', title: 'Direct Prompt Injection', desc: 'Attacker manipulates LLM via malicious inputs.', severity: 'High' },
-      { category: 'Sensitive Information Disclosure', title: 'LLM Data Leakage', desc: 'LLM reveals sensitive info from training data or context.', severity: 'High' },
-      { category: 'Excessive Agency', title: 'Unintended Tool Execution', desc: 'LLM agent takes destructive actions autonomously.', severity: 'High' }
+      { category: 'Prompt Injection', title: 'Direct Prompt Injection', desc: 'Attacker manipulates LLM via malicious inputs.', likelihood: 5, impact: 4 },
+      { category: 'Sensitive Information Disclosure', title: 'LLM Data Leakage', desc: 'LLM reveals sensitive info from training data or context.', likelihood: 4, impact: 4 },
+      { category: 'Excessive Agency', title: 'Unintended Tool Execution', desc: 'LLM agent takes destructive actions autonomously.', likelihood: 3, impact: 5 }
     ];
   } else if (framework === 'OWASP') {
     switch(nodeType) {
-      case 'datastore': return [{ category: 'Cryptographic Failures', title: 'Unencrypted Data', desc: 'Data is not encrypted at rest.', severity: 'High' }];
-      case 'process': return [{ category: 'Injection', title: 'Command/SQL Injection', desc: 'Untrusted data is sent to an interpreter.', severity: 'High' }];
+      case 'datastore': return [{ category: 'Cryptographic Failures', title: 'Unencrypted Data', desc: 'Data is not encrypted at rest.', likelihood: 4, impact: 4 }];
+      case 'process': return [{ category: 'Injection', title: 'Command/SQL Injection', desc: 'Untrusted data is sent to an interpreter.', likelihood: 3, impact: 5 }];
       default: return [];
     }
   }
   return [];
 };
 
+export const calculateRisk = (likelihood, impact) => likelihood * impact;
+
+export const getSeverityFromRisk = (risk) => {
+  if (risk <= 4) return 'Low';
+  if (risk <= 9) return 'Medium';
+  if (risk <= 14) return 'High';
+  return 'Critical';
+};
+
 export default function ThreatPanel() {
   const { selectedNode, setNodes, threats, addThreat, updateThreat, deleteThreat } = useThreatModel();
   const [isAdding, setIsAdding] = useState(false);
   const [activeFramework, setActiveFramework] = useState('STRIDE');
-  const [newThreat, setNewThreat] = useState({ title: '', category: 'Spoofing', severity: 'Medium', desc: '', status: 'Open' });
+  const [newThreat, setNewThreat] = useState({ title: '', category: 'Spoofing', likelihood: 3, impact: 3, desc: '', status: 'Open' });
 
   if (!selectedNode) {
     return (
@@ -60,7 +69,7 @@ export default function ThreatPanel() {
     if (!newThreat.title) return;
     addThreat(selectedNode.id, { ...newThreat, id: uuidv4() });
     setIsAdding(false);
-    setNewThreat({ title: '', category: FRAMEWORKS[activeFramework][0], severity: 'Medium', desc: '', status: 'Open' });
+    setNewThreat({ title: '', category: FRAMEWORKS[activeFramework][0], likelihood: 3, impact: 3, desc: '', status: 'Open' });
   };
 
   const handleUpdateLabel = (e) => {
@@ -115,13 +124,34 @@ export default function ThreatPanel() {
               {FRAMEWORKS[activeFramework].map(c => <option key={c} value={c}>{c}</option>)}
             </select>
             
-            <label>Severity</label>
-            <select value={newThreat.severity} onChange={e => setNewThreat({...newThreat, severity: e.target.value})}>
-              <option value="High">High</option>
-              <option value="Medium">Medium</option>
-              <option value="Low">Low</option>
-            </select>
+            <div style={{ display: 'flex', gap: '12px', marginBottom: '12px' }}>
+              <div style={{ flex: 1 }}>
+                <label>Likelihood ({newThreat.likelihood})</label>
+                <input 
+                  type="range" min="1" max="5" 
+                  value={newThreat.likelihood} 
+                  onChange={e => setNewThreat({...newThreat, likelihood: parseInt(e.target.value)})}
+                  style={{ width: '100%', marginBottom: 0 }}
+                />
+              </div>
+              <div style={{ flex: 1 }}>
+                <label>Impact ({newThreat.impact})</label>
+                <input 
+                  type="range" min="1" max="5" 
+                  value={newThreat.impact} 
+                  onChange={e => setNewThreat({...newThreat, impact: parseInt(e.target.value)})}
+                  style={{ width: '100%', marginBottom: 0 }}
+                />
+              </div>
+            </div>
             
+            <div style={{ marginBottom: '16px', fontSize: '12px', display: 'flex', justifyContent: 'space-between' }}>
+              <span>Risk Score: <strong>{calculateRisk(newThreat.likelihood, newThreat.impact)}</strong></span>
+              <span className={`badge badge-${getSeverityFromRisk(calculateRisk(newThreat.likelihood, newThreat.impact)).toLowerCase()}`}>
+                {getSeverityFromRisk(calculateRisk(newThreat.likelihood, newThreat.impact))}
+              </span>
+            </div>
+
             <label>Description</label>
             <textarea value={newThreat.desc} onChange={e => setNewThreat({...newThreat, desc: e.target.value})} rows={3} />
             
@@ -137,46 +167,65 @@ export default function ThreatPanel() {
             <h4 style={{ fontSize: '12px', color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '4px' }}>
               <AlertTriangle size={12} /> Suggestions
             </h4>
-            {suggestions.map((s, i) => (
-              <div key={i} className="threat-card" style={{ borderStyle: 'dashed', cursor: 'pointer', opacity: 0.8 }} onClick={() => {
-                setNewThreat({ ...s, status: 'Open' });
-                setIsAdding(true);
-              }}>
-                <div className="threat-header">
-                  <span className="threat-title" style={{ color: 'var(--accent)' }}>+ {s.title}</span>
-                  <span className={`badge badge-${s.severity.toLowerCase()}`}>{s.severity}</span>
+            {suggestions.map((s, i) => {
+              const risk = calculateRisk(s.likelihood, s.impact);
+              const severity = getSeverityFromRisk(risk);
+              return (
+                <div key={i} className="threat-card" style={{ borderStyle: 'dashed', cursor: 'pointer', opacity: 0.8 }} onClick={() => {
+                  setNewThreat({ ...s, status: 'Open' });
+                  setIsAdding(true);
+                }}>
+                  <div className="threat-header">
+                    <span className="threat-title" style={{ color: 'var(--accent)' }}>+ {s.title}</span>
+                    <span className={`badge badge-${severity.toLowerCase()}`}>{severity}</span>
+                  </div>
+                  <div className="threat-desc">{s.desc}</div>
                 </div>
-                <div className="threat-desc">{s.desc}</div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
 
-        {nodeThreats.map(threat => (
-          <div key={threat.id} className="threat-card">
-            <div className="threat-header">
-              <span className="threat-title">{threat.title}</span>
-              <span className={`badge badge-${threat.severity.toLowerCase()}`}>{threat.severity}</span>
+        {nodeThreats.map(threat => {
+          // Compatibility with old format (which had 'severity' string instead of likelihood/impact)
+          const isOldFormat = !threat.likelihood;
+          const likelihood = threat.likelihood || 3;
+          const impact = threat.impact || 3;
+          const risk = calculateRisk(likelihood, impact);
+          const severity = isOldFormat ? threat.severity : getSeverityFromRisk(risk);
+
+          return (
+            <div key={threat.id} className="threat-card">
+              <div className="threat-header">
+                <span className="threat-title">{threat.title}</span>
+                <span className={`badge badge-${severity.toLowerCase()}`}>{severity}</span>
+              </div>
+              <div style={{ fontSize: '12px', color: 'var(--accent)', marginBottom: '8px', fontWeight: '500' }}>{threat.category}</div>
+              <div className="threat-desc">{threat.desc}</div>
+              
+              {!isOldFormat && (
+                <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginBottom: '12px' }}>
+                  Risk Score: {risk} (L:{likelihood} x I:{impact})
+                </div>
+              )}
+
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '12px', paddingTop: '12px', borderTop: '1px solid var(--panel-border)' }}>
+                <select 
+                  value={threat.status} 
+                  onChange={(e) => updateThreat(selectedNode.id, threat.id, { status: e.target.value })}
+                  style={{ width: '120px', marginBottom: 0, padding: '4px', fontSize: '12px' }}
+                >
+                  <option value="Open">🔴 Open</option>
+                  <option value="Mitigated">🟢 Mitigated</option>
+                  <option value="Accepted">⚪ Accepted</option>
+                </select>
+                <button className="btn btn-danger" style={{ padding: '4px 8px' }} onClick={() => deleteThreat(selectedNode.id, threat.id)}>
+                  <Trash2 size={14} />
+                </button>
+              </div>
             </div>
-            <div style={{ fontSize: '12px', color: 'var(--accent)', marginBottom: '8px', fontWeight: '500' }}>{threat.category}</div>
-            <div className="threat-desc">{threat.desc}</div>
-            
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '12px', paddingTop: '12px', borderTop: '1px solid var(--panel-border)' }}>
-              <select 
-                value={threat.status} 
-                onChange={(e) => updateThreat(selectedNode.id, threat.id, { status: e.target.value })}
-                style={{ width: '120px', marginBottom: 0, padding: '4px', fontSize: '12px' }}
-              >
-                <option value="Open">🔴 Open</option>
-                <option value="Mitigated">🟢 Mitigated</option>
-                <option value="Accepted">⚪ Accepted</option>
-              </select>
-              <button className="btn btn-danger" style={{ padding: '4px 8px' }} onClick={() => deleteThreat(selectedNode.id, threat.id)}>
-                <Trash2 size={14} />
-              </button>
-            </div>
-          </div>
-        ))}
+          );
+        })}
 
         {nodeThreats.length === 0 && !isAdding && suggestions.length === 0 && (
           <div style={{ textAlign: 'center', color: 'var(--text-muted)', padding: '20px 0', fontSize: '14px' }}>

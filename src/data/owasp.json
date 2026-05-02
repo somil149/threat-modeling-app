@@ -1,0 +1,66 @@
+{
+  "OWASP_TOP_10": [
+    {
+      "id": "A01:2021",
+      "name": "Broken Access Control",
+      "description": "Failures typically lead to unauthorized information disclosure, modification, or destruction of all data.",
+      "stride_mapping": "Elevation of Privilege"
+    },
+    {
+      "id": "A02:2021",
+      "name": "Cryptographic Failures",
+      "description": "Failures related to cryptography, which often leads to sensitive data exposure or system compromise.",
+      "stride_mapping": "Information Disclosure"
+    },
+    {
+      "id": "A03:2021",
+      "name": "Injection",
+      "description": "User-supplied data is not validated, filtered, or sanitized by the application.",
+      "stride_mapping": "Tampering"
+    },
+    {
+      "id": "A04:2021",
+      "name": "Insecure Design",
+      "description": "Risks related to design flaws, requiring threat modeling, secure design patterns, and reference architectures.",
+      "stride_mapping": "Tampering"
+    },
+    {
+      "id": "A05:2021",
+      "name": "Security Misconfiguration",
+      "description": "Insecure default settings, incomplete configurations, open cloud storage, misconfigured HTTP headers.",
+      "stride_mapping": "Elevation of Privilege"
+    }
+  ],
+  "OWASP_LLM_TOP_10": [
+    {
+      "id": "LLM01:2023",
+      "name": "Prompt Injection",
+      "description": "Crafted prompts that trick the LLM into executing malicious commands.",
+      "mitre_mapping": "T1059"
+    },
+    {
+      "id": "LLM02:2023",
+      "name": "Insecure Output Handling",
+      "description": "Vulnerabilities occur when an LLM output is accepted without scrutiny.",
+      "mitre_mapping": "T1190"
+    },
+    {
+      "id": "LLM03:2023",
+      "name": "Training Data Poisoning",
+      "description": "Tampering with training data to introduce vulnerabilities or biases.",
+      "mitre_mapping": "T1565"
+    },
+    {
+      "id": "LLM06:2023",
+      "name": "Sensitive Information Disclosure",
+      "description": "LLM reveals sensitive information, proprietary algorithms, or confidential data.",
+      "mitre_mapping": "T1530"
+    },
+    {
+      "id": "LLM08:2023",
+      "name": "Excessive Agency",
+      "description": "LLM interfaces with other systems and executes unintended actions.",
+      "mitre_mapping": "T1078"
+    }
+  ]
+}
