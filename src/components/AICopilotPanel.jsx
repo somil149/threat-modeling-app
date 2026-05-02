@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useThreatModel } from '../context/ThreatModelContext';
-import { KeyRound, Send, Bot, Shield, Trash2, Loader2, AlertTriangle, Settings } from 'lucide-react';
+import { KeyRound, Send, Bot, Shield, Trash2, Loader2, AlertTriangle, Settings, RefreshCw } from 'lucide-react';
 
 const PROVIDERS = {
   OpenAI: { baseUrl: 'https://api.openai.com/v1', defaultModel: 'gpt-4o' },
@@ -17,6 +17,9 @@ export default function AICopilotPanel() {
   const [tempConfig, setTempConfig] = useState(
     aiConfig || { provider: 'OpenAI', baseUrl: PROVIDERS.OpenAI.baseUrl, apiKey: '', model: PROVIDERS.OpenAI.defaultModel }
   );
+  
+  const [availableModels, setAvailableModels] = useState([]);
+  const [isFetchingModels, setIsFetchingModels] = useState(false);
 
   const [messages, setMessages] = useState([
     { role: 'assistant', content: 'Hello! I am your AI Security Copilot. I have full context of your architecture. How can I help you threat model today?' }
@@ -37,6 +40,33 @@ export default function AICopilotPanel() {
       baseUrl: PROVIDERS[prov].baseUrl,
       model: PROVIDERS[prov].defaultModel
     }));
+    setAvailableModels([]); // Reset models on provider change
+  };
+
+  const handleFetchModels = async () => {
+    if (!tempConfig.baseUrl) return;
+    setIsFetchingModels(true);
+    try {
+      const headers = {};
+      if (tempConfig.apiKey) headers['Authorization'] = `Bearer ${tempConfig.apiKey}`;
+      
+      const response = await fetch(`${tempConfig.baseUrl}/models`, { headers });
+      if (!response.ok) throw new Error("API Error");
+      
+      const data = await response.json();
+      if (data && data.data) {
+        const modelsList = data.data.map(m => ({ id: m.id, name: m.name || m.id }));
+        setAvailableModels(modelsList);
+        if (modelsList.length > 0 && !modelsList.find(m => m.id === tempConfig.model)) {
+          setTempConfig(prev => ({...prev, model: modelsList[0].id}));
+        }
+      }
+    } catch (e) {
+      alert("Could not discover models automatically. You may need to enter an API key first, or you can just type the Model ID manually.");
+      setAvailableModels([]);
+    } finally {
+      setIsFetchingModels(false);
+    }
   };
 
   const handleSaveConfig = (e) => {
@@ -160,13 +190,31 @@ MAPPED THREATS: ${JSON.stringify(threats)}
             </div>
 
             <div>
-              <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold' }}>Model ID</label>
-              <input 
-                type="text" 
-                value={tempConfig.model}
-                onChange={e => setTempConfig({...tempConfig, model: e.target.value})}
-                style={{ width: '100%', padding: '12px', borderRadius: '6px', border: '1px solid var(--panel-border)', background: 'rgba(0,0,0,0.2)', color: 'white' }}
-              />
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                <label style={{ fontWeight: 'bold' }}>Model ID</label>
+                <button type="button" onClick={handleFetchModels} disabled={isFetchingModels} style={{ background: 'none', border: 'none', color: '#8b5cf6', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px', fontSize: '12px' }}>
+                  <RefreshCw size={12} className={isFetchingModels ? "spin-anim" : ""} /> Auto-Discover Models
+                </button>
+              </div>
+              
+              {availableModels.length > 0 ? (
+                <select 
+                  value={tempConfig.model}
+                  onChange={e => setTempConfig({...tempConfig, model: e.target.value})}
+                  style={{ width: '100%', padding: '12px', borderRadius: '6px', border: '1px solid var(--panel-border)', background: 'rgba(0,0,0,0.2)', color: 'white' }}
+                >
+                  {availableModels.map(m => (
+                    <option key={m.id} value={m.id}>{m.name}</option>
+                  ))}
+                </select>
+              ) : (
+                <input 
+                  type="text" 
+                  value={tempConfig.model}
+                  onChange={e => setTempConfig({...tempConfig, model: e.target.value})}
+                  style={{ width: '100%', padding: '12px', borderRadius: '6px', border: '1px solid var(--panel-border)', background: 'rgba(0,0,0,0.2)', color: 'white' }}
+                />
+              )}
             </div>
 
             <div>
