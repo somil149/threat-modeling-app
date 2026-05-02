@@ -9,7 +9,7 @@ export function ThreatModelProvider({ children }) {
   const [threats, setThreats] = useState({}); // key: nodeId, value: Array of threats
   const [selectedNode, setSelectedNode] = useState(null);
   const [currentMode, setCurrentMode] = useState('ARCHITECTURE');
-  const [openAiKey, setOpenAiKey] = useState('');
+  const [aiConfig, setAiConfig] = useState(null);
 
   // Load from local storage
   useEffect(() => {
@@ -21,7 +21,11 @@ export function ThreatModelProvider({ children }) {
         setEdges(parsed.edges || []);
         setThreats(parsed.threats || {});
         if (parsed.currentMode) setCurrentMode(parsed.currentMode);
-        if (parsed.openAiKey) setOpenAiKey(parsed.openAiKey);
+        if (parsed.aiConfig) {
+          setAiConfig(parsed.aiConfig);
+        } else if (parsed.openAiKey) {
+          setAiConfig({ provider: 'OpenAI', baseUrl: 'https://api.openai.com/v1', apiKey: parsed.openAiKey, model: 'gpt-4o' });
+        }
       } catch (e) {
         console.error("Failed to parse saved data", e);
       }
@@ -30,13 +34,12 @@ export function ThreatModelProvider({ children }) {
 
   // Save to local storage
   useEffect(() => {
-    // Debounce or just save directly (it's small data)
     const timeout = setTimeout(() => {
-      const data = { nodes, edges, threats, currentMode, openAiKey };
+      const data = { nodes, edges, threats, currentMode, aiConfig };
       localStorage.setItem('threatModelData', JSON.stringify(data));
     }, 500);
     return () => clearTimeout(timeout);
-  }, [nodes, edges, threats, currentMode, openAiKey]);
+  }, [nodes, edges, threats, currentMode, aiConfig]);
 
   const onNodesChange = useCallback((changes) => {
     setNodes((nds) => applyNodeChanges(changes, nds));
@@ -125,7 +128,7 @@ export function ThreatModelProvider({ children }) {
       threats, setThreats,
       selectedNode, setSelectedNode,
       currentMode, setCurrentMode,
-      openAiKey, setOpenAiKey,
+      aiConfig, setAiConfig,
       addThreat, updateThreat, deleteThreat,
       importData, exportData, loadTemplate, deleteNode
     }}>
