@@ -96,28 +96,28 @@ export default function AICopilotPanel() {
       switch (actionPayload.action) {
         case 'addNode':
           const newNode = {
-            id: actionPayload.id || \`node-\${Date.now()}\`,
+            id: actionPayload.id || `node-${Date.now()}`,
             type: actionPayload.type || 'process',
             position: { x: Math.random() * 400 + 50, y: Math.random() * 400 + 50 },
             data: { label: actionPayload.label || 'New Node', confidentiality: 'Medium', integrity: 'Medium', availability: 'Medium' }
           };
           setNodes((nds) => [...nds, newNode]);
-          return \`Added \${newNode.type} node: "\${newNode.data.label}"\`;
+          return `Added ${newNode.type} node: "${newNode.data.label}"`;
           
         case 'connectNodes':
           const newEdge = {
-            id: \`edge-\${Date.now()}\`,
+            id: `edge-${Date.now()}`,
             source: actionPayload.source,
             target: actionPayload.target,
             animated: true,
             style: { stroke: '#8b5cf6', strokeWidth: 2 }
           };
           setEdges((eds) => [...eds, newEdge]);
-          return \`Connected node "\${actionPayload.source}" to "\${actionPayload.target}"\`;
+          return `Connected node "${actionPayload.source}" to "${actionPayload.target}"`;
           
         case 'addThreat':
           const threat = {
-            id: \`threat-\${Date.now()}\`,
+            id: `threat-${Date.now()}`,
             title: actionPayload.title,
             category: actionPayload.category || 'Spoofing',
             status: 'Open',
@@ -125,18 +125,18 @@ export default function AICopilotPanel() {
             description: actionPayload.description || ''
           };
           addThreat(actionPayload.nodeId, threat);
-          return \`Mapped "\${threat.category}" threat to node \${actionPayload.nodeId}\`;
+          return `Mapped "${threat.category}" threat to node ${actionPayload.nodeId}`;
           
         case 'changeMode':
           setCurrentMode(actionPayload.mode);
-          return \`Navigated to \${actionPayload.mode.replace('_', ' ')}\`;
+          return `Navigated to ${actionPayload.mode.replace('_', ' ')}`;
           
         default:
-          return \`Unknown action requested: \${actionPayload.action}\`;
+          return `Unknown action requested: ${actionPayload.action}`;
       }
     } catch (e) {
       console.error("Agent action execution failed", e);
-      return \`Failed to execute action: \${actionPayload.action}\`;
+      return `Failed to execute action: ${actionPayload.action}`;
     }
   };
 
@@ -149,47 +149,47 @@ export default function AICopilotPanel() {
     setMessages(prev => [...prev, { role: 'user', content: userMessage }]);
     setIsLoading(true);
 
-    const systemContext = \`
+    const systemContext = `
 You are an expert Security Architect and DevSecOps Agentic Copilot.
 You have access to the user's current threat model architecture.
 
 --- AGENTIC CAPABILITIES ---
 You can physically manipulate the application state on behalf of the user. 
-To take an action, output a JSON block wrapped EXACTLY in \\\`\\\`\\\`agent_action ... \\\`\\\`\\\`
+To take an action, output a JSON block wrapped EXACTLY in \`\`\`agent_action ... \`\`\`
 Supported actions:
-1. Add Node: \\\`\\\`\\\`agent_action
+1. Add Node: \`\`\`agent_action
 {"action": "addNode", "id": "node-123", "type": "process", "label": "Web Server"}
-\\\`\\\`\\\` (types: process, datastore, externalEntity)
-2. Connect Nodes: \\\`\\\`\\\`agent_action
+\`\`\` (types: process, datastore, externalEntity)
+2. Connect Nodes: \`\`\`agent_action
 {"action": "connectNodes", "source": "node-123", "target": "node-456"}
-\\\`\\\`\\\`
-3. Add Threat: \\\`\\\`\\\`agent_action
+\`\`\`
+3. Add Threat: \`\`\`agent_action
 {"action": "addThreat", "nodeId": "node-123", "title": "SQL Injection", "category": "Tampering", "severity": "High", "description": "Unsanitized inputs"}
-\\\`\\\`\\\`
-4. Change View: \\\`\\\`\\\`agent_action
+\`\`\`
+4. Change View: \`\`\`agent_action
 {"action": "changeMode", "mode": "RISK_MATRIX"}
-\\\`\\\`\\\` (modes: ARCHITECTURE, THREATS, RISK_MATRIX, EXPORT)
+\`\`\` (modes: ARCHITECTURE, THREATS, RISK_MATRIX, EXPORT)
 
 You can output multiple action blocks if needed. Always explain what you are doing in regular markdown text alongside the actions.
 
 --- CURRENT ARCHITECTURE CONTEXT ---
-NODES: \${JSON.stringify(nodes.map(n => ({ id: n.id, type: n.type, label: n.data.label, cia: { c: n.data.confidentiality, i: n.data.integrity, a: n.data.availability } })))}
-EDGES (Data Flows): \${JSON.stringify(edges.map(e => ({ source: e.source, target: e.target })))}
-MAPPED THREATS: \${JSON.stringify(threats)}
+NODES: ${JSON.stringify(nodes.map(n => ({ id: n.id, type: n.type, label: n.data.label, cia: { c: n.data.confidentiality, i: n.data.integrity, a: n.data.availability } })))}
+EDGES (Data Flows): ${JSON.stringify(edges.map(e => ({ source: e.source, target: e.target })))}
+MAPPED THREATS: ${JSON.stringify(threats)}
 ------------------------------------
-\`;
+`;
 
     try {
       const headers = { 'Content-Type': 'application/json' };
       if (aiConfig.apiKey) {
-        headers['Authorization'] = \`Bearer \${aiConfig.apiKey}\`;
+        headers['Authorization'] = `Bearer ${aiConfig.apiKey}`;
       }
       if (aiConfig.provider === 'OpenRouter' || aiConfig.provider === 'OpenRouterFree') {
         headers['HTTP-Referer'] = window.location.href;
         headers['X-Title'] = 'Security Architect Copilot';
       }
 
-      const response = await fetch(\`\${aiConfig.baseUrl}/chat/completions\`, {
+      const response = await fetch(`${aiConfig.baseUrl}/chat/completions`, {
         method: 'POST',
         headers,
         body: JSON.stringify({
@@ -204,14 +204,14 @@ MAPPED THREATS: \${JSON.stringify(threats)}
       });
 
       if (!response.ok) {
-        throw new Error(\`API Error: \${response.status}\`);
+        throw new Error(`API Error: ${response.status}`);
       }
 
       const data = await response.json();
       const aiReplyRaw = data.choices[0].message.content;
       
       // Parse Agent Actions
-      const actionRegex = /\\\`\\\`\\\`agent_action\\n([\\s\\S]*?)\\n\\\`\\\`\\\`/g;
+      const actionRegex = /```agent_action\n([\s\S]*?)\n```/g;
       let match;
       const actionsTaken = [];
       let cleanedReply = aiReplyRaw;
@@ -236,7 +236,7 @@ MAPPED THREATS: \${JSON.stringify(threats)}
 
       setMessages(prev => [...prev, { role: 'assistant', content: cleanedReply, actions: actionsTaken }]);
     } catch (error) {
-      setMessages(prev => [...prev, { role: 'assistant', content: \`**Error:** Failed to communicate with API. Please check your config or network connection. (\${error.message})\` }]);
+      setMessages(prev => [...prev, { role: 'assistant', content: `**Error:** Failed to communicate with API. Please check your config or network connection. (${error.message})` }]);
     } finally {
       setIsLoading(false);
     }
