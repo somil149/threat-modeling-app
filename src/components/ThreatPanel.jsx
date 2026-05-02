@@ -1,50 +1,58 @@
 import React, { useState } from 'react';
 import { useThreatModel } from '../context/ThreatModelContext';
-import { ShieldAlert, Plus, Trash2, AlertTriangle } from 'lucide-react';
+import { ShieldAlert, Plus, Trash2, AlertTriangle, BookOpen } from 'lucide-react';
 import { v4 as uuidv4 } from 'uuid';
 
-const STRIDE_CATEGORIES = ['Spoofing', 'Tampering', 'Repudiation', 'Information Disclosure', 'Denial of Service', 'Elevation of Privilege'];
+const FRAMEWORKS = {
+  STRIDE: ['Spoofing', 'Tampering', 'Repudiation', 'Information Disclosure', 'Denial of Service', 'Elevation of Privilege'],
+  OWASP: ['Broken Access Control', 'Cryptographic Failures', 'Injection', 'Insecure Design', 'Security Misconfiguration', 'Vulnerable Components', 'Authentication Failures', 'Data Integrity Failures', 'Logging Failures', 'SSRF'],
+  OWASP_LLM: ['Prompt Injection', 'Insecure Output Handling', 'Training Data Poisoning', 'Model Denial of Service', 'Supply Chain Vulnerabilities', 'Sensitive Information Disclosure', 'Insecure Plugin Design', 'Excessive Agency', 'Overreliance', 'Model Theft']
+};
 
-const getSuggestions = (nodeType) => {
-  switch(nodeType) {
-    case 'datastore':
-      return [
-        { category: 'Information Disclosure', title: 'Data exposure at rest', desc: 'Sensitive data might be read by unauthorized users.', severity: 'High' },
-        { category: 'Tampering', title: 'Data tampering at rest', desc: 'Data can be modified without authorization.', severity: 'Medium' }
-      ];
-    case 'process':
-      return [
-        { category: 'Elevation of Privilege', title: 'Unauthorized access', desc: 'Process runs with higher privileges than necessary.', severity: 'High' },
-        { category: 'Denial of Service', title: 'Resource exhaustion', desc: 'Process can be flooded with requests.', severity: 'Medium' }
-      ];
-    case 'entity':
-      return [
-        { category: 'Spoofing', title: 'Entity impersonation', desc: 'Attacker pretends to be this entity.', severity: 'High' },
-        { category: 'Repudiation', title: 'Action denial', desc: 'Entity can deny performing an action.', severity: 'Medium' }
-      ];
-    default:
-      return [];
+const getSuggestions = (nodeType, framework) => {
+  if (framework === 'STRIDE') {
+    switch(nodeType) {
+      case 'datastore': return [{ category: 'Information Disclosure', title: 'Data exposure at rest', desc: 'Sensitive data might be read by unauthorized users.', severity: 'High' }];
+      case 'process': return [{ category: 'Elevation of Privilege', title: 'Unauthorized access', desc: 'Process runs with higher privileges than necessary.', severity: 'High' }];
+      case 'entity': return [{ category: 'Spoofing', title: 'Entity impersonation', desc: 'Attacker pretends to be this entity.', severity: 'High' }];
+      default: return [];
+    }
+  } else if (framework === 'OWASP_LLM') {
+    return [
+      { category: 'Prompt Injection', title: 'Direct Prompt Injection', desc: 'Attacker manipulates LLM via malicious inputs.', severity: 'High' },
+      { category: 'Sensitive Information Disclosure', title: 'LLM Data Leakage', desc: 'LLM reveals sensitive info from training data or context.', severity: 'High' },
+      { category: 'Excessive Agency', title: 'Unintended Tool Execution', desc: 'LLM agent takes destructive actions autonomously.', severity: 'High' }
+    ];
+  } else if (framework === 'OWASP') {
+    switch(nodeType) {
+      case 'datastore': return [{ category: 'Cryptographic Failures', title: 'Unencrypted Data', desc: 'Data is not encrypted at rest.', severity: 'High' }];
+      case 'process': return [{ category: 'Injection', title: 'Command/SQL Injection', desc: 'Untrusted data is sent to an interpreter.', severity: 'High' }];
+      default: return [];
+    }
   }
+  return [];
 };
 
 export default function ThreatPanel() {
   const { selectedNode, setNodes, threats, addThreat, updateThreat, deleteThreat } = useThreatModel();
   const [isAdding, setIsAdding] = useState(false);
+  const [activeFramework, setActiveFramework] = useState('STRIDE');
   const [newThreat, setNewThreat] = useState({ title: '', category: 'Spoofing', severity: 'Medium', desc: '', status: 'Open' });
 
   if (!selectedNode) {
     return (
       <div className="sidebar glass-panel">
-        <div className="sidebar-header">
-          <h2><ShieldAlert size={20} /> Threat Models</h2>
-          <p>Select a node to view or add threats.</p>
+        <div className="sidebar-header" style={{ textAlign: 'center', padding: '40px 20px' }}>
+          <ShieldAlert size={48} color="var(--panel-border)" style={{ marginBottom: '16px' }} />
+          <h2 style={{ justifyContent: 'center' }}>Threat Modeling</h2>
+          <p>Select a component on the canvas to start mapping threats.</p>
         </div>
       </div>
     );
   }
 
   const nodeThreats = threats[selectedNode.id] || [];
-  const suggestions = getSuggestions(selectedNode.type).filter(
+  const suggestions = getSuggestions(selectedNode.type, activeFramework).filter(
     s => !nodeThreats.some(t => t.title === s.title)
   );
 
@@ -52,7 +60,7 @@ export default function ThreatPanel() {
     if (!newThreat.title) return;
     addThreat(selectedNode.id, { ...newThreat, id: uuidv4() });
     setIsAdding(false);
-    setNewThreat({ title: '', category: 'Spoofing', severity: 'Medium', desc: '', status: 'Open' });
+    setNewThreat({ title: '', category: FRAMEWORKS[activeFramework][0], severity: 'Medium', desc: '', status: 'Open' });
   };
 
   const handleUpdateLabel = (e) => {
@@ -75,6 +83,21 @@ export default function ThreatPanel() {
       </div>
 
       <div className="sidebar-content">
+        <div style={{ marginBottom: '20px' }}>
+          <label style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><BookOpen size={12} /> Threat Framework</label>
+          <select 
+            value={activeFramework} 
+            onChange={e => {
+              setActiveFramework(e.target.value);
+              setNewThreat(prev => ({ ...prev, category: FRAMEWORKS[e.target.value][0] }));
+            }}
+          >
+            <option value="STRIDE">STRIDE Framework</option>
+            <option value="OWASP">OWASP Top 10</option>
+            <option value="OWASP_LLM">OWASP LLM Top 10</option>
+          </select>
+        </div>
+
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
           <h3 style={{ fontSize: '16px', fontWeight: '600' }}>Threats ({nodeThreats.length})</h3>
           <button className="btn btn-secondary" style={{ padding: '4px 8px' }} onClick={() => setIsAdding(true)}>
@@ -87,9 +110,9 @@ export default function ThreatPanel() {
             <label>Title</label>
             <input value={newThreat.title} onChange={e => setNewThreat({...newThreat, title: e.target.value})} placeholder="Threat title" />
             
-            <label>Category (STRIDE)</label>
+            <label>Category ({activeFramework})</label>
             <select value={newThreat.category} onChange={e => setNewThreat({...newThreat, category: e.target.value})}>
-              {STRIDE_CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
+              {FRAMEWORKS[activeFramework].map(c => <option key={c} value={c}>{c}</option>)}
             </select>
             
             <label>Severity</label>
@@ -154,6 +177,12 @@ export default function ThreatPanel() {
             </div>
           </div>
         ))}
+
+        {nodeThreats.length === 0 && !isAdding && suggestions.length === 0 && (
+          <div style={{ textAlign: 'center', color: 'var(--text-muted)', padding: '20px 0', fontSize: '14px' }}>
+            No threats mapped in this framework yet.
+          </div>
+        )}
       </div>
     </div>
   );
