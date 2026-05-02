@@ -9,6 +9,7 @@ export function ThreatModelProvider({ children }) {
   const [threats, setThreats] = useState({}); // key: nodeId, value: Array of threats
   const [selectedNode, setSelectedNode] = useState(null);
   const [currentMode, setCurrentMode] = useState('ARCHITECTURE');
+  const [openAiKey, setOpenAiKey] = useState('');
 
   // Load from local storage
   useEffect(() => {
@@ -20,6 +21,7 @@ export function ThreatModelProvider({ children }) {
         setEdges(parsed.edges || []);
         setThreats(parsed.threats || {});
         if (parsed.currentMode) setCurrentMode(parsed.currentMode);
+        if (parsed.openAiKey) setOpenAiKey(parsed.openAiKey);
       } catch (e) {
         console.error("Failed to parse saved data", e);
       }
@@ -30,11 +32,11 @@ export function ThreatModelProvider({ children }) {
   useEffect(() => {
     // Debounce or just save directly (it's small data)
     const timeout = setTimeout(() => {
-      const data = { nodes, edges, threats, currentMode };
+      const data = { nodes, edges, threats, currentMode, openAiKey };
       localStorage.setItem('threatModelData', JSON.stringify(data));
     }, 500);
     return () => clearTimeout(timeout);
-  }, [nodes, edges, threats, currentMode]);
+  }, [nodes, edges, threats, currentMode, openAiKey]);
 
   const onNodesChange = useCallback((changes) => {
     setNodes((nds) => applyNodeChanges(changes, nds));
@@ -123,6 +125,7 @@ export function ThreatModelProvider({ children }) {
       threats, setThreats,
       selectedNode, setSelectedNode,
       currentMode, setCurrentMode,
+      openAiKey, setOpenAiKey,
       addThreat, updateThreat, deleteThreat,
       importData, exportData, loadTemplate, deleteNode
     }}>
