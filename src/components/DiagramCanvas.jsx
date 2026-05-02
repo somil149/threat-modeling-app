@@ -9,12 +9,12 @@ export default function DiagramCanvas() {
 
   const onConnect = useCallback((params) => setEdges((eds) => addEdge(params, eds)), [setEdges]);
 
-  const onNodeClick = useCallback((_, node) => {
-    setSelectedNode(node);
-  }, [setSelectedNode]);
-
-  const onPaneClick = useCallback(() => {
-    setSelectedNode(null);
+  const onSelectionChange = useCallback(({ nodes }) => {
+    if (nodes.length > 0) {
+      setSelectedNode(nodes[0]);
+    } else {
+      setSelectedNode(null);
+    }
   }, [setSelectedNode]);
 
   return (
@@ -25,8 +25,7 @@ export default function DiagramCanvas() {
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
         onConnect={onConnect}
-        onNodeClick={onNodeClick}
-        onPaneClick={onPaneClick}
+        onSelectionChange={onSelectionChange}
         nodeTypes={nodeTypes}
         connectionMode={ConnectionMode.Loose}
         fitView

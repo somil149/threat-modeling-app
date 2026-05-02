@@ -5,15 +5,16 @@ import { v4 as uuidv4 } from 'uuid';
 import TemplateModal from './TemplateModal';
 
 export default function Toolbar() {
-  const { setNodes, exportData, importData } = useThreatModel();
+  const { nodes, setNodes, exportData, importData } = useThreatModel();
   const fileInputRef = useRef(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const addNode = (type, label) => {
+    const offset = (nodes.length % 10) * 30;
     const newNode = {
       id: uuidv4(),
       type,
-      position: { x: Math.random() * 200 + 100, y: Math.random() * 200 + 100 },
+      position: { x: 100 + offset, y: 100 + offset },
       data: { label }
     };
     setNodes((nds) => [...nds, newNode]);

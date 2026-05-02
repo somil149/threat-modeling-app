@@ -19,6 +19,7 @@ export function ThreatModelProvider({ children }) {
         setNodes(parsed.nodes || []);
         setEdges(parsed.edges || []);
         setThreats(parsed.threats || {});
+        if (parsed.currentMode) setCurrentMode(parsed.currentMode);
       } catch (e) {
         console.error("Failed to parse saved data", e);
       }
@@ -29,11 +30,11 @@ export function ThreatModelProvider({ children }) {
   useEffect(() => {
     // Debounce or just save directly (it's small data)
     const timeout = setTimeout(() => {
-      const data = { nodes, edges, threats };
+      const data = { nodes, edges, threats, currentMode };
       localStorage.setItem('threatModelData', JSON.stringify(data));
     }, 500);
     return () => clearTimeout(timeout);
-  }, [nodes, edges, threats]);
+  }, [nodes, edges, threats, currentMode]);
 
   const onNodesChange = useCallback((changes) => {
     setNodes((nds) => applyNodeChanges(changes, nds));

@@ -14,7 +14,7 @@ const generateAttackGraph = (nodes, edges, threats) => {
     attackNodes.push({
       id: `ap-${n.id}`,
       data: { label: `${n.data.label}\n(${n.type})` },
-      position: { x: (idx % 3) * 250 + 100, y: Math.floor(idx / 3) * 150 + 100 },
+      position: { x: (idx % 3) * 350 + 100, y: Math.floor(idx / 3) * 250 + 100 },
       style: {
         background: '#1e293b',
         color: '#f3f4f6',
@@ -45,8 +45,12 @@ const generateAttackGraph = (nodes, edges, threats) => {
       source: `ap-${e.source}`,
       target: `ap-${e.target}`,
       label: maxRisk > 0 ? `Lateral Movement\nRisk: ${maxRisk}` : 'Trust Path',
-      animated: maxRisk >= 10, // animate high risk paths
-      style: { stroke: maxRisk >= 10 ? '#ef4444' : '#3b82f6', strokeWidth: maxRisk >= 10 ? 3 : 1 }
+      animated: maxRisk >= 10,
+      style: { stroke: maxRisk >= 10 ? '#ef4444' : '#3b82f6', strokeWidth: maxRisk >= 10 ? 3 : 1 },
+      labelBgStyle: { fill: '#0b0d11', fillOpacity: 0.8 },
+      labelBgPadding: [8, 4],
+      labelBgBorderRadius: 4,
+      labelStyle: { fill: '#fff', fontWeight: 600 }
     });
   });
 
@@ -59,7 +63,11 @@ const generateAttackGraph = (nodes, edges, threats) => {
       target: `ap-${ent.id}`,
       label: 'Initial Access',
       animated: true,
-      style: { stroke: '#ef4444', strokeWidth: 2 }
+      style: { stroke: '#ef4444', strokeWidth: 2 },
+      labelBgStyle: { fill: '#0b0d11', fillOpacity: 0.8 },
+      labelBgPadding: [8, 4],
+      labelBgBorderRadius: 4,
+      labelStyle: { fill: '#ef4444', fontWeight: 700 }
     });
   });
 
